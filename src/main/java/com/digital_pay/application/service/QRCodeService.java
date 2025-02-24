@@ -1,6 +1,5 @@
 package com.digital_pay.application.service;
 
-
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
@@ -11,8 +10,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Base64;
 
-    @Service
-    public class QRCodeService {
+@Service
+public class QRCodeService {
 
     public String generateQRCode(String content) throws WriterException, IOException {
         QRCodeWriter qrCodeWriter = new QRCodeWriter();
@@ -22,6 +21,5 @@ import java.util.Base64;
         MatrixToImageWriter.writeToStream(bitMatrix, "PNG", outputStream);
 
         return Base64.getEncoder().encodeToString(outputStream.toByteArray());
-
     }
 }

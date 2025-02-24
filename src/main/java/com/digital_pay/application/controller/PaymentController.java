@@ -10,22 +10,24 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
-    @RestController
-    @RequestMapping("/api/payments")
-    @RequiredArgsConstructor
-    public class PaymentController {
+@RestController
+@RequestMapping("/api/payments")
+@RequiredArgsConstructor
+public class PaymentController {
 
-        private final PaymentService paymentService;
+    private final PaymentService paymentService;
 
-        @PostMapping("/generate-qr")
-        public ResponseEntity<QRCodeResponse> generateQRCode(@Valid @RequestBody PaymentRequest paymentRequest) throws Exception {
-            QRCodeResponse response = paymentService.generateQRCode(paymentRequest);
-            return ResponseEntity.ok(response);
-        }
-
-        @PostMapping("/process/{transactionId}")
-        public ResponseEntity<PaymentResponse> processPayment(@PathVariable String transactionId) {
-            PaymentResponse response = paymentService.processPayment(transactionId);
-            return ResponseEntity.ok(response);
-        }
+    @PostMapping("/generate-qr")
+    public ResponseEntity<QRCodeResponse> generateQRCode(@Valid @RequestBody PaymentRequest paymentRequest) throws Exception {
+        System.out.println("Received request to generate QR code: " + paymentRequest);
+        QRCodeResponse response = paymentService.generateQRCode(paymentRequest);
+        return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/process/{transactionId}")
+    public ResponseEntity<PaymentResponse> processPayment(@PathVariable String transactionId) {
+        System.out.println("Received request to process payment for transaction: " + transactionId);
+        PaymentResponse response = paymentService.processPayment(transactionId);
+        return ResponseEntity.ok(response);
+    }
+}

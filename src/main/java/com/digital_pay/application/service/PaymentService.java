@@ -28,8 +28,15 @@ public class PaymentService {
     private final ObjectMapper objectMapper;
 
     public QRCodeResponse generateQRCode(PaymentRequest paymentRequest) throws Exception {
+        // Debug logging
+        System.out.println("Generating QR code for payment: " + paymentRequest);
+        System.out.println("User ID: " + paymentRequest.getUserId());
+        System.out.println("Merchant ID: " + paymentRequest.getMerchantId());
+
+        // Validate user and merchant exist
         validateEntities(paymentRequest.getUserId(), paymentRequest.getMerchantId());
 
+        // Create transaction
         Transaction transaction = new Transaction();
         transaction.setAmount(paymentRequest.getAmount());
         transaction.setCurrency(paymentRequest.getCurrency());
@@ -40,7 +47,9 @@ public class PaymentService {
         transaction.setCreatedAt(LocalDateTime.now());
 
         transaction = transactionRepository.save(transaction);
+        System.out.println("Transaction created with ID: " + transaction.getId());
 
+        // Generate QR code content
         String qrContent = objectMapper.writeValueAsString(transaction.getId());
         String qrCodeBase64 = qrCodeService.generateQRCode(qrContent);
 
@@ -53,6 +62,8 @@ public class PaymentService {
 
     @Transactional
     public PaymentResponse processPayment(String transactionId) {
+        System.out.println("Processing payment for transaction: " + transactionId);
+
         Transaction transaction = transactionRepository.findById(transactionId)
                 .orElseThrow(() -> new EntityNotFoundException("Transaction not found"));
 
@@ -68,11 +79,16 @@ public class PaymentService {
 
         user.setBalance(user.getBalance().subtract(transaction.getAmount()));
         merchant.setBalance(merchant.getBalance().add(transaction.getAmount()));
+
+        // Update transaction status
         transaction.setStatus("COMPLETED");
 
+        // Save all changes
         userRepository.save(user);
         merchantRepository.save(merchant);
         transactionRepository.save(transaction);
+
+        System.out.println("Payment completed for transaction: " + transactionId);
 
         PaymentRequest paymentRequest = new PaymentRequest();
         paymentRequest.setAmount(transaction.getAmount());
@@ -91,10 +107,18 @@ public class PaymentService {
     }
 
     private void validateEntities(Long userId, Long merchantId) {
-        if (!userRepository.existsById(userId)) {
+        System.out.println("Validating entities - User ID: " + userId + ", Merchant ID: " + merchantId);
+
+        boolean userExists = userRepository.existsById(userId);
+        boolean merchantExists = merchantRepository.existsById(merchantId);
+
+        System.out.println("User exists: " + userExists);
+        System.out.println("Merchant exists: " + merchantExists);
+
+        if (!userExists) {
             throw new EntityNotFoundException("User not found");
         }
-        if (!merchantRepository.existsById(merchantId)) {
+        if (!merchantExists) {
             throw new EntityNotFoundException("Merchant not found");
         }
     }
